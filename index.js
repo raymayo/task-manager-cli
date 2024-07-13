@@ -108,12 +108,11 @@ async function taskOptions(currentUser) {
 
   switch (menuData.taskOption) {
     case 'Create Task':
-      // console.log(currentUser)
       createTask(currentUser)
+
       break;
     case 'View Task':
       viewTask(currentUser)
-
       break;
     case 'Edit Task':
       editTask(currentUser);
@@ -121,7 +120,6 @@ async function taskOptions(currentUser) {
       break;
     case 'Delete Task':
       deleteTask(currentUser)
-
 
       break;
 
