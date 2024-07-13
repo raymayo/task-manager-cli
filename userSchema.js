@@ -12,12 +12,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    task: [{
-        title: {
+    taskList: [{
+        task: {
             type: String,
-        },
-        description: {
-            type: String
         },
         completed: {
             type: Boolean

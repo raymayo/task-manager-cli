@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const chalk = require('chalk');
 const { connectToMongoDB, closeMongoDBConnection } = require('./mongo.js');
 const { hashPassword, verifyPassword } = require('./passwordUtils.js');
-const { createTask, viewTask } = require('./taskFunctions')
+const { createTask, viewTask, editTask } = require('./taskFunctions')
 const User = require('./userSchema.js');
 
 const uri = 'mongodb://localhost:27017/task-manager-db';
@@ -116,8 +116,7 @@ async function taskOptions(currentUser) {
 
       break;
     case 'Edit Task':
-      console.log('hello2')
-
+      editTask(currentUser);
 
       break;
     case 'Delete Task':
@@ -158,5 +157,4 @@ async function createUser(newUserName, newPassword) {
 main().catch((error) => {
   console.error(error);
 });
-
 
