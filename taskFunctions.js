@@ -2,7 +2,6 @@ const inquirer = require('inquirer');
 const mongoose = require('mongoose');
 const User = require('./userSchema.js');
 const chalk = require('chalk');
-const taskOptions = require('./index.js');
 
 
 const uri = 'mongodb://localhost:27017/task-manager-db';
@@ -146,7 +145,50 @@ async function replaceTask(task, currentUser) {
 
         if (updatedUser) {
             console.log(chalk.green('Task replaced successfully'));
-            taskOptions(currentUser)
+
+        } else {
+            console.log('Task not updated');
+        }
+    } catch (error) {
+        console.error('Error replacing task:', error);
+    } finally {
+        // Ensure the database connection is closed
+        await mongoose.disconnect();
+    }
+}
+
+
+async function removeFunc(task, currentUser) {
+    try {
+        // Connect to the database
+        await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+        // Find the user by username
+        const user = await User.findOne({ username: currentUser });
+
+        if (!user) {
+            console.log('User not found');
+            return;
+        }
+
+        // Find the task in the user's task list
+        const selectedTask = user.taskList.find(taskItem => taskItem.task === task);
+
+        if (!selectedTask) {
+            console.log(chalk.red('Task not found'));
+            return;
+        }
+
+        // Update the task in the user's task list
+        const updatedUser = await User.findOneAndUpdate(
+            { username: currentUser },
+            { $pull: { taskList: { _id: selectedTask._id } } },
+            { new: true }
+        );
+
+        if (updatedUser) {
+            console.log(chalk.green('Task deleted successfully'));
+
         } else {
             console.log('Task not updated');
         }
@@ -179,15 +221,12 @@ async function deleteTask(currentUser) {
                     {
                         type: 'list',
                         name: 'allTask',
-                        message: 'Edit Task',
+                        message: 'Delete Task',
                         choices: taskChoices,
                     },
                 ])
                 .then((answers) => {
-                    // console.log(answers.allTask);
-
-
-
+                    removeFunc(answers.allTask, currentUser)
                 });
         }
     } catch (err) {
@@ -196,4 +235,4 @@ async function deleteTask(currentUser) {
 }
 
 
-module.exports = { createTask, viewTask, editTask };
+module.exports = { createTask, viewTask, editTask, deleteTask };
