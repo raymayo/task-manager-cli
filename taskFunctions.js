@@ -69,6 +69,8 @@ async function viewTask(currentUser) {
         await mongoose.disconnect();
     }
 }
+// TODO: add a go back to choices and confirmation to edit
+
 
 async function editTask(currentUser) {
     await mongoose.connect(uri);
@@ -222,6 +224,8 @@ async function deleteTask(currentUser) {
                 });
             });
 
+            // TODO: add a go back to choices
+
             const taskChoice = await inquirer.prompt([
                 {
                     type: 'list',
@@ -242,7 +246,8 @@ async function deleteTask(currentUser) {
             if (confirmation.dialogue === 'Yes') {
                 removeFunc(taskChoice.allTask, currentUser)
             } else {
-                taskChoice
+                console.clear()
+                deleteTask(currentUser)
             }
 
 
