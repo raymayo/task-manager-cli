@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const chalk = require('chalk');
 const { connectToMongoDB, closeMongoDBConnection } = require('./mongo.js');
 const { hashPassword, verifyPassword } = require('./passwordUtils.js');
-const { createTask, viewTask, editTask, deleteTask } = require('./taskFunctions')
+const { createTask, viewTask, editTask, deleteTask, taskOptions } = require('./taskFunctions')
 const User = require('./userSchema.js');
 
 const uri = 'mongodb://localhost:27017/task-manager-db';
@@ -96,38 +96,6 @@ async function register() {
   createUser(regUser.username, hashedPass);
 }
 
-async function taskOptions(currentUser) {
-  const menuData = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'taskOption',
-      message: 'Task Menu',
-      choices: ['Create Task', 'View Task', 'Edit Task', 'Delete Task'],
-    },
-  ]);
-
-  switch (menuData.taskOption) {
-    case 'Create Task':
-      createTask(currentUser)
-
-      break;
-    case 'View Task':
-      viewTask(currentUser)
-      break;
-    case 'Edit Task':
-      editTask(currentUser);
-
-      break;
-    case 'Delete Task':
-      deleteTask(currentUser)
-
-      break;
-
-    default:
-      console.log('Invalid choice');
-      break;
-  }
-}
 
 async function createUser(newUserName, newPassword) {
   try {
@@ -155,4 +123,7 @@ async function createUser(newUserName, newPassword) {
 main().catch((error) => {
   console.error(error);
 });
+
+
+
 

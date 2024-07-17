@@ -36,7 +36,8 @@ async function createTask(currentUser) {
         );
 
         if (newTask) {
-            console.log('Task saved successfully');
+            console.clear()
+            console.log(chalk.bgGreen('Task saved successfully'));
         } else {
             console.log('User not found or task not added');
         }
@@ -44,6 +45,7 @@ async function createTask(currentUser) {
         console.log(error);
     } finally {
         await mongoose.disconnect();
+        taskOptions(currentUser)
     }
 }
 
@@ -144,7 +146,8 @@ async function replaceTask(task, currentUser) {
         );
 
         if (updatedUser) {
-            console.log(chalk.green('Task replaced successfully'));
+            console.clear()
+            console.log(chalk.bgGreen('Task replaced successfully'));
 
         } else {
             console.log('Task not updated');
@@ -154,6 +157,7 @@ async function replaceTask(task, currentUser) {
     } finally {
         // Ensure the database connection is closed
         await mongoose.disconnect();
+        taskOptions(currentUser);
     }
 }
 
@@ -187,7 +191,8 @@ async function removeFunc(task, currentUser) {
         );
 
         if (updatedUser) {
-            console.log(chalk.green('Task deleted successfully'));
+            console.clear()
+            console.log(chalk.bgGreen('Task deleted successfully'));
 
         } else {
             console.log('Task not updated');
@@ -197,6 +202,7 @@ async function removeFunc(task, currentUser) {
     } finally {
         // Ensure the database connection is closed
         await mongoose.disconnect();
+        taskOptions(currentUser)
     }
 }
 
@@ -216,23 +222,66 @@ async function deleteTask(currentUser) {
                 });
             });
 
-            await inquirer
-                .prompt([
-                    {
-                        type: 'list',
-                        name: 'allTask',
-                        message: 'Delete Task',
-                        choices: taskChoices,
-                    },
-                ])
-                .then((answers) => {
-                    removeFunc(answers.allTask, currentUser)
-                });
+            const taskChoice = await inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'allTask',
+                    message: 'Delete Task',
+                    choices: taskChoices,
+                },
+            ])
+
+            const confirmation = await inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'dialogue',
+                    message: 'Do you want to delete this item?',
+                    choices: ['Yes', 'No'],
+                }
+            ])
+            if (confirmation.dialogue === 'Yes') {
+                removeFunc(taskChoice.allTask, currentUser)
+            } else {
+                taskChoice
+            }
+
+
         }
     } catch (err) {
         console.log(err);
     }
 }
 
+async function taskOptions(currentUser) {
+    const menuData = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'taskOption',
+            message: 'Task Menu',
+            choices: ['Create Task', 'View Task', 'Edit Task', 'Delete Task'],
+        },
+    ]);
+    switch (menuData.taskOption) {
+        case 'Create Task':
+            createTask(currentUser)
+            break;
+        case 'View Task':
+            viewTask(currentUser)
+            break;
+        case 'Edit Task':
+            editTask(currentUser);
 
-module.exports = { createTask, viewTask, editTask, deleteTask };
+            break;
+        case 'Delete Task':
+            deleteTask(currentUser)
+
+            break;
+
+        default:
+            console.log('Invalid choice');
+            break;
+    }
+}
+
+
+module.exports = { createTask, viewTask, editTask, deleteTask, taskOptions };
