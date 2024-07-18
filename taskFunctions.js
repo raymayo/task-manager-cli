@@ -2,7 +2,7 @@ const inquirer = require('inquirer');
 const mongoose = require('mongoose');
 const User = require('./userSchema.js');
 const chalk = require('chalk');
-
+const { main } = require('./index')
 const uri = 'mongodb://localhost:27017/task-manager-db';
 
 async function createTask(currentUser) {
@@ -63,8 +63,8 @@ async function viewTask(currentUser) {
                 viewAllTask.push({
                     name: `Task ${index + 1}: ${task.task}`,
                     value: task.task,
-                })
-            })
+                });
+            });
 
             viewAllTask.push({ name: 'Back', value: 'goBack' });
 
@@ -80,14 +80,14 @@ async function viewTask(currentUser) {
             if (viewTask.allTask === 'goBack') {
                 console.clear();
                 taskOptions(currentUser);
+            } else {
+                viewTask(currentUser);
             }
-
         }
     } catch (error) {
         console.error(error);
     }
 }
-
 
 async function editTask(currentUser) {
     await mongoose.connect(uri);
@@ -195,7 +195,7 @@ async function replaceTask(task, currentUser) {
     } finally {
         // Ensure the database connection is closed
         await mongoose.disconnect();
-        taskOptions(currentUser);
+        editTask(currentUser);
     }
 }
 
@@ -243,7 +243,7 @@ async function removeFunc(task, currentUser) {
     } finally {
         // Ensure the database connection is closed
         await mongoose.disconnect();
-        taskOptions(currentUser);
+        deleteTask(currentUser);
     }
 }
 
@@ -263,7 +263,7 @@ async function deleteTask(currentUser) {
                 });
             });
 
-            // TODO: add a go back to choices
+            taskChoices.push({ name: 'Back', value: 'goBack' });
 
             const taskChoice = await inquirer.prompt([
                 {
@@ -274,19 +274,24 @@ async function deleteTask(currentUser) {
                 },
             ]);
 
-            const confirmation = await inquirer.prompt([
-                {
-                    type: 'list',
-                    name: 'dialogue',
-                    message: 'Do you want to delete this item?',
-                    choices: ['Yes', 'No'],
-                },
-            ]);
-            if (confirmation.dialogue === 'Yes') {
-                removeFunc(taskChoice.allTask, currentUser);
-            } else {
+            if (taskChoice.allTask === 'goBack') {
                 console.clear();
-                deleteTask(currentUser);
+                taskOptions(currentUser);
+            } else {
+                const confirmation = await inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'dialogue',
+                        message: 'Do you want to delete this item?',
+                        choices: ['Yes', 'No'],
+                    },
+                ]);
+                if (confirmation.dialogue === 'Yes') {
+                    removeFunc(taskChoice.allTask, currentUser);
+                } else {
+                    console.clear();
+                    deleteTask(currentUser);
+                }
             }
         }
     } catch (err) {
@@ -300,7 +305,7 @@ async function taskOptions(currentUser) {
             type: 'list',
             name: 'taskOption',
             message: 'Task Menu',
-            choices: ['Create Task', 'View Task', 'Edit Task', 'Delete Task'],
+            choices: ['Create Task', 'View Task', 'Edit Task', 'Delete Task', 'Logout'],
         },
     ]);
     switch (menuData.taskOption) {
@@ -318,6 +323,8 @@ async function taskOptions(currentUser) {
             deleteTask(currentUser);
 
             break;
+        case 'Logout':
+
 
         default:
             console.log('Invalid choice');
