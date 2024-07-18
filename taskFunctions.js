@@ -48,6 +48,7 @@ async function createTask(currentUser) {
     }
 }
 
+// TODO: add features
 async function viewTask(currentUser) {
     await mongoose.connect(uri);
 
@@ -57,18 +58,36 @@ async function viewTask(currentUser) {
         if (user) {
             const taskList = user.taskList;
 
+            let viewAllTask = [];
             taskList.forEach((task, index) => {
-                console.log(chalk.cyan(`Task ${index + 1}:`), task.task);
-                console.log();
-            });
+                viewAllTask.push({
+                    name: `Task ${index + 1}: ${task.task}`,
+                    value: task.task,
+                })
+            })
+
+            viewAllTask.push({ name: 'Back', value: 'goBack' });
+
+            const viewTask = await inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'allTask',
+                    message: 'Edit Task',
+                    choices: viewAllTask,
+                },
+            ]);
+
+            if (viewTask.allTask === 'goBack') {
+                console.clear();
+                taskOptions(currentUser);
+            }
+
         }
     } catch (error) {
         console.error(error);
-    } finally {
-        await mongoose.disconnect();
     }
 }
-// TODO: add a go back to choices and confirmation to edit
+
 
 async function editTask(currentUser) {
     await mongoose.connect(uri);
@@ -99,7 +118,7 @@ async function editTask(currentUser) {
 
             if (editTaskView.allTask === 'goBack') {
                 console.clear();
-                editTask(currentUser);
+                taskOptions(currentUser);
             } else {
                 const confirmation = await inquirer.prompt([
                     {
