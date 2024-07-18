@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const User = require('./userSchema.js');
 const chalk = require('chalk');
 
-
 const uri = 'mongodb://localhost:27017/task-manager-db';
 
 async function createTask(currentUser) {
@@ -36,7 +35,7 @@ async function createTask(currentUser) {
         );
 
         if (newTask) {
-            console.clear()
+            console.clear();
             console.log(chalk.bgGreen('Task saved successfully'));
         } else {
             console.log('User not found or task not added');
@@ -45,7 +44,7 @@ async function createTask(currentUser) {
         console.log(error);
     } finally {
         await mongoose.disconnect();
-        taskOptions(currentUser)
+        taskOptions(currentUser);
     }
 }
 
@@ -71,7 +70,6 @@ async function viewTask(currentUser) {
 }
 // TODO: add a go back to choices and confirmation to edit
 
-
 async function editTask(currentUser) {
     await mongoose.connect(uri);
 
@@ -88,21 +86,36 @@ async function editTask(currentUser) {
                 });
             });
 
-            await inquirer
-                .prompt([
+            taskChoices.push({ name: 'Back', value: 'goBack' });
+
+            const editTaskView = await inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'allTask',
+                    message: 'Edit Task',
+                    choices: taskChoices,
+                },
+            ]);
+
+            if (editTaskView.allTask === 'goBack') {
+                console.clear();
+                editTask(currentUser);
+            } else {
+                const confirmation = await inquirer.prompt([
                     {
                         type: 'list',
-                        name: 'allTask',
-                        message: 'Edit Task',
-                        choices: taskChoices,
+                        name: 'dialogue',
+                        message: 'Do you want to edit this item?',
+                        choices: ['Yes', 'No'],
                     },
-                ])
-                .then((answers) => {
-                    // console.log(answers.allTask);
-                    replaceTask(answers.allTask, currentUser)
-
-
-                });
+                ]);
+                if (confirmation.dialogue === 'Yes') {
+                    replaceTask(editTaskView.allTask, currentUser);
+                } else {
+                    console.clear();
+                    editTask(currentUser);
+                }
+            }
         }
     } catch (err) {
         console.log(err);
@@ -117,12 +130,15 @@ async function replaceTask(task, currentUser) {
                 type: 'input',
                 name: 'task',
                 message: 'Replace Task:',
-                default: task
+                default: task,
             },
         ]);
 
         // Connect to the database
-        await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+        await mongoose.connect(uri, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
 
         // Find the user by username
         const user = await User.findOne({ username: currentUser });
@@ -133,7 +149,9 @@ async function replaceTask(task, currentUser) {
         }
 
         // Find the task in the user's task list
-        const selectedTask = user.taskList.find(taskItem => taskItem.task === task);
+        const selectedTask = user.taskList.find(
+            (taskItem) => taskItem.task === task
+        );
 
         if (!selectedTask) {
             console.log(chalk.red('Task not found'));
@@ -148,9 +166,8 @@ async function replaceTask(task, currentUser) {
         );
 
         if (updatedUser) {
-            console.clear()
+            console.clear();
             console.log(chalk.bgGreen('Task replaced successfully'));
-
         } else {
             console.log('Task not updated');
         }
@@ -163,11 +180,13 @@ async function replaceTask(task, currentUser) {
     }
 }
 
-
 async function removeFunc(task, currentUser) {
     try {
         // Connect to the database
-        await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+        await mongoose.connect(uri, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
 
         // Find the user by username
         const user = await User.findOne({ username: currentUser });
@@ -178,7 +197,9 @@ async function removeFunc(task, currentUser) {
         }
 
         // Find the task in the user's task list
-        const selectedTask = user.taskList.find(taskItem => taskItem.task === task);
+        const selectedTask = user.taskList.find(
+            (taskItem) => taskItem.task === task
+        );
 
         if (!selectedTask) {
             console.log(chalk.red('Task not found'));
@@ -193,9 +214,8 @@ async function removeFunc(task, currentUser) {
         );
 
         if (updatedUser) {
-            console.clear()
+            console.clear();
             console.log(chalk.bgGreen('Task deleted successfully'));
-
         } else {
             console.log('Task not updated');
         }
@@ -204,7 +224,7 @@ async function removeFunc(task, currentUser) {
     } finally {
         // Ensure the database connection is closed
         await mongoose.disconnect();
-        taskOptions(currentUser)
+        taskOptions(currentUser);
     }
 }
 
@@ -233,7 +253,7 @@ async function deleteTask(currentUser) {
                     message: 'Delete Task',
                     choices: taskChoices,
                 },
-            ])
+            ]);
 
             const confirmation = await inquirer.prompt([
                 {
@@ -241,16 +261,14 @@ async function deleteTask(currentUser) {
                     name: 'dialogue',
                     message: 'Do you want to delete this item?',
                     choices: ['Yes', 'No'],
-                }
-            ])
+                },
+            ]);
             if (confirmation.dialogue === 'Yes') {
-                removeFunc(taskChoice.allTask, currentUser)
+                removeFunc(taskChoice.allTask, currentUser);
             } else {
-                console.clear()
-                deleteTask(currentUser)
+                console.clear();
+                deleteTask(currentUser);
             }
-
-
         }
     } catch (err) {
         console.log(err);
@@ -268,17 +286,17 @@ async function taskOptions(currentUser) {
     ]);
     switch (menuData.taskOption) {
         case 'Create Task':
-            createTask(currentUser)
+            createTask(currentUser);
             break;
         case 'View Task':
-            viewTask(currentUser)
+            viewTask(currentUser);
             break;
         case 'Edit Task':
             editTask(currentUser);
 
             break;
         case 'Delete Task':
-            deleteTask(currentUser)
+            deleteTask(currentUser);
 
             break;
 
@@ -287,6 +305,5 @@ async function taskOptions(currentUser) {
             break;
     }
 }
-
 
 module.exports = { createTask, viewTask, editTask, deleteTask, taskOptions };
