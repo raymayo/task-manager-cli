@@ -1,9 +1,8 @@
-const inquirer = require('inquirer');
-const mongoose = require('mongoose');
-const User = require('./userSchema.js');
-const chalk = require('chalk');
-const { main } = require('./index')
-const uri = 'mongodb://localhost:27017/task-manager-db';
+import inquirer from 'inquirer';
+import mongoose from 'mongoose';
+import User from './userSchema.mjs';
+import chalk from 'chalk';
+
 
 async function createTask(currentUser) {
     console.log('Create Task');
@@ -332,4 +331,4 @@ async function taskOptions(currentUser) {
     }
 }
 
-module.exports = { createTask, viewTask, editTask, deleteTask, taskOptions };
+export { createTask, viewTask, editTask, deleteTask, taskOptions };

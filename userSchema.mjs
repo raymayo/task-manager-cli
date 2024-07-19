@@ -1,5 +1,5 @@
-const { connectToMongoDB, closeMongoDBConnection } = require('./mongo.js');
-const mongoose = require('mongoose');
+
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -28,4 +28,4 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema, 'users');
 
-module.exports = User;
+export default User;

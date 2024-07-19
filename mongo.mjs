@@ -1,14 +1,13 @@
-const { MongoClient } = require('mongodb');
+import { MongoClient } from 'mongodb';
 
 const url = "mongodb://localhost:27017/";
 const dbName = "task-manager-db";
 
 const client = new MongoClient(url);
 
-async function connectToMongoDB() {
+export async function connectToMongoDB() {
   try {
     await client.connect();
-    console.log('Connected successfully to MongoDB');
     return client.db(dbName);
   } catch (err) {
     console.error('Error connecting to MongoDB:', err);
@@ -16,7 +15,7 @@ async function connectToMongoDB() {
   }
 }
 
-async function closeMongoDBConnection() {
+export async function closeMongoDBConnection() {
   try {
     await client.close();
     // console.log('MongoDB connection closed.');
@@ -26,4 +25,4 @@ async function closeMongoDBConnection() {
   }
 }
 
-module.exports = { connectToMongoDB, closeMongoDBConnection };
+

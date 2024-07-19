@@ -1,17 +1,32 @@
 #!/usr/bin/env node
 
-const inquirer = require('inquirer');
-const mongoose = require('mongoose');
-const chalk = require('chalk');
-const { connectToMongoDB, closeMongoDBConnection } = require('./mongo.js');
-const { hashPassword, verifyPassword } = require('./passwordUtils.js');
-const { createTask, viewTask, editTask, deleteTask, taskOptions } = require('./taskFunctions')
-const User = require('./userSchema.js');
+import inquirer from 'inquirer';
+import mongoose from 'mongoose';
+import figlet from 'figlet';
+import { connectToMongoDB, closeMongoDBConnection } from './mongo.mjs';
+import { hashPassword, verifyPassword } from './passwordUtils.mjs';
+import { taskOptions } from './taskFunctions.mjs';
+import chalkAnimation from 'chalk-animation';
+import gradient from 'gradient-string';
+
+import User from './userSchema.mjs';
 
 const uri = 'mongodb://localhost:27017/task-manager-db';
 
+const title = figlet.textSync('Task Manager CLI', {
+  font: 'Standard', // You can change the font style
+  horizontalLayout: 'default',
+  verticalLayout: 'default'
+});
+
+const animation = chalkAnimation.rainbow(title);
+const gradientTitle = gradient(['#FFEA00', '#E5194C', '#0D0066'])(title);
+
+
 // Encapsulate the main logic in an async function
 async function main() {
+  console.clear()
+  console.log(gradientTitle);
   const db = await connectToMongoDB();
 
   const options = [
@@ -23,7 +38,7 @@ async function main() {
     {
       type: 'list',
       name: 'userOption',
-      message: 'Task-Manager-CLI',
+      message: 'Welcome!',
       choices: options.map((option) => option.name),
     }
   ]);
