@@ -2,6 +2,10 @@ import inquirer from 'inquirer';
 import mongoose from 'mongoose';
 import User from './userSchema.mjs';
 import chalk from 'chalk';
+import 'dotenv/config'
+
+
+const uri = process.env.MONGO_URI
 
 
 async function createTask(currentUser) {
@@ -323,7 +327,10 @@ async function taskOptions(currentUser) {
 
             break;
         case 'Logout':
+            console.clear()
+            await process.exit(0)
 
+            break;
 
         default:
             console.log('Invalid choice');

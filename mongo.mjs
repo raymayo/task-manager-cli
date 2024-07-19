@@ -1,7 +1,9 @@
 import { MongoClient } from 'mongodb';
+import 'dotenv/config'
 
-const url = "mongodb://localhost:27017/";
-const dbName = "task-manager-db";
+
+const url = process.env.MONGO_URI
+const dbName = "test";
 
 const client = new MongoClient(url);
 

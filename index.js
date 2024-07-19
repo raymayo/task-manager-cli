@@ -8,10 +8,11 @@ import { hashPassword, verifyPassword } from './passwordUtils.mjs';
 import { taskOptions } from './taskFunctions.mjs';
 import chalkAnimation from 'chalk-animation';
 import gradient from 'gradient-string';
+import 'dotenv/config'
 
 import User from './userSchema.mjs';
 
-const uri = 'mongodb://localhost:27017/task-manager-db';
+const uri = process.env.MONGO_URI
 
 const title = figlet.textSync('Task Manager CLI', {
   font: 'Standard', // You can change the font style
@@ -50,27 +51,6 @@ async function main() {
   }
 }
 
-async function validate(db, answers) {
-  const collection = db.collection('users');
-  const query = {};
-  const cursor = collection.find(query);
-
-  await cursor.forEach(async (user) => {
-    try {
-      const verifyPass = await verifyPassword(answers.password, user.password);
-
-      if (user.username === answers.username && verifyPass === true) {
-        console.log('Login successful for user:', user.username);
-        console.clear();
-        taskOptions(user.username);
-      }
-    } catch (error) {
-      console.error('Error verifying password:', error);
-    }
-  });
-
-  await closeMongoDBConnection(db);
-}
 
 async function login(db) {
   const answers = await inquirer.prompt([
@@ -86,10 +66,41 @@ async function login(db) {
       mask: '*',
     },
   ]);
-
-
-  await validate(db, answers);
+  validate(db, answers);
 }
+
+async function validate(db, answers) {
+  const collection = db.collection('users');
+  const query = { username: answers.username };
+  const cursor = collection.find(query);
+
+  try {
+    const users = await cursor.toArray(); // Collect all matching users
+
+    for (const user of users) {
+      try {
+        const verifyPass = await verifyPassword(answers.password, user.password);
+
+        if (user.username === answers.username && verifyPass) {
+          console.log('Login successful for user:', user.username);
+          console.clear();
+          await taskOptions(user.username); // Ensure taskOptions is awaited
+          return; // Exit function after successful login
+        }
+      } catch (error) {
+        console.error('Error verifying password:', error);
+      }
+    }
+
+    console.log('Invalid username or password.'); // Handle invalid login
+
+  } catch (error) {
+    console.error('Error during validation:', error);
+  } finally {
+    await closeMongoDBConnection(db); // Ensure this does not terminate the CLI
+  }
+}
+
 
 async function register() {
   const regUser = await inquirer.prompt([
@@ -105,7 +116,7 @@ async function register() {
       mask: '*',
     },
   ]);
-  current_user = regUser.username.toLowerCase();
+  let current_user = regUser.username.toLowerCase();
   const hashedPass = await hashPassword(regUser.password);
   console.log(`Welcome ${regUser.username.toLowerCase()}!`);
   createUser(regUser.username, hashedPass);
@@ -115,7 +126,6 @@ async function register() {
 async function createUser(newUserName, newPassword) {
   try {
     await mongoose.connect(uri);
-    console.log('Connected to MongoDB');
     let newUser = await User.findOne({ newUserName });
 
     if (!newUser) {
@@ -124,13 +134,14 @@ async function createUser(newUserName, newPassword) {
         password: newPassword,
       });
       await newUser.save();
-      console.log('user saved successfully');
     }
   } catch (error) {
     console.log(error);
   } finally {
     await mongoose.disconnect();
-    console.log('disconnected from server');
+    console.clear()
+    // await process.exit(0)
+    main()
   }
 }
 

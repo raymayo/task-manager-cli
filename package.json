@@ -16,6 +16,7 @@
     "chalk": "^4.1.2",
     "chalk-animation": "^2.0.3",
     "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
     "esm": "^3.2.25",
     "figlet": "^1.7.0",
     "gradient-string": "^2.0.2",
